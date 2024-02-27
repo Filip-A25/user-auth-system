@@ -71,7 +71,7 @@ const loginUser = async (req, res, next) => {
 }
 
 const updateUser = async (req, res, next) => {
-    const {id, email} = req.body;
+    const {id, email} = req.params;
 
     if (!id && !email) return res.status(404).json({success: false, message: "User ID or E-mail is required."});
     const fetchQuery = id ? {
