@@ -1,7 +1,9 @@
 const {connection, connectDb, endDbConnection} = require("../db/database");
 const { Client } = require("pg");
 const argon2 = require("argon2");
+require("dotenv").config();
 const {checkEmailFormat, checkUsernameFormat} = require("./format");
+const {generateAccessToken} = require("./token");
 
 const fetchUsers = async (req, res, next) => {
     // Enter query for PostgreSQL database.
@@ -24,6 +26,11 @@ const registerUser = async (req, res, next) => {
     const { email, username, password } = req.body;
     const trimEmail = email.replace(/\s/g, "");
     const trimUsername = username.replace(/\s/g, "");
+    const user = {
+        email: email,
+        username: username,
+        password: password
+    };
     
     // Check email and username format, check if password is entered.
     if (!checkEmailFormat(trimEmail) || !checkUsernameFormat(trimUsername) || !password) return res.status(400).json({success: false, message: "Invalid input."});
@@ -42,12 +49,20 @@ const registerUser = async (req, res, next) => {
 
     await endDbConnection(db);
 
+    const expiryPeriod = 3 * 3600 * 1000;
+    const accessToken = generateAccessToken(user, expiryPeriod);
+
+    res.cookie("jwt", accessToken, { httpOnly: true, maxAge: expiryPeriod });
     res.status(201).json({success: true, message: `User with email ${trimEmail} and username ${trimUsername} created`});
 }
 
 const loginUser = async (req, res, next) => {
     const { email, password } = req.body;
-    const trimEmail = email.replace(/\s/g, "");
+    const user = {
+        email: email,
+        password: password
+    }
+    const trimEmail = user.email.replace(/\s/g, "");
 
     if (!checkEmailFormat(trimEmail) || !password) return res.status(400).json({success: false, message: "Invalid input."});
 
@@ -67,7 +82,13 @@ const loginUser = async (req, res, next) => {
 
     // Check if authResult return 'true' or 'false'.
     if (!authResult) return res.status(401).json({success: false, message: "Wrong password entered."});
-    res.status(201).json({success: true, message: "User successfully logged in."})
+    if (authResult) {
+        const expiryDate = 3 * 3600 * 1000;
+        const accessToken = generateAccessToken(user, expiryDate);
+
+        res.cookie("jwt", accessToken, { httpOnly: true, maxAge: expiryDate });
+        res.status(201).json({success: true, message: "User successfully logged in."});
+    }
 }
 
 const updateUser = async (req, res, next) => {
