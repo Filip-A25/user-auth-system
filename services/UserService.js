@@ -1,6 +1,5 @@
 const {emailRegexp, emailMaxChars, usernameRegexp, usernameMaxChars, usernameMinChars} = require("../customValues");
 
-// Check if entered email address is properly formatted.
 const checkEmailFormat = (email) => {
     if (emailRegexp.test(email)) {
         if (email.length > emailMaxChars) {
@@ -15,7 +14,6 @@ const checkEmailFormat = (email) => {
     }
 }
 
-// Check if entered username is properly formatted.
 const checkUsernameFormat = (username) => {
     if (!usernameRegexp.test(username)) {
         if (username.length < usernameMinChars) {

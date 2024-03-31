@@ -1,9 +1,6 @@
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
-
-const generateAccessToken = (user, expire) => {
-    jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: expire });
-}
+const {generateAccessToken} = require("../utils/TokenUtils");
 
 const defaultAuthenticateToken = (req, res, next) => {
     const token = req.cookies.jwt;
