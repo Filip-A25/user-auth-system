@@ -42,7 +42,7 @@ const registerUser = async (req, res) => {
 
 const loginUser = async (req, res) => {
     const { email, password } = req.body;
-    const trimEmail = user.email.replace(/\s/g, "");
+    const trimEmail = email.replace(/\s/g, "");
 
     if (!checkEmailFormat(trimEmail) || !password) return res.status(400).json({success: false, message: "Invalid input."});
 
@@ -81,7 +81,7 @@ const updateUser = async (req, res) => {
         const fetchResult = id ? await User.findAll({
             attributes: ["role"],
             where: {
-                id: id
+                id: Number(id)
             }
         }) : await User.findAll({
             attributes: ["role"],
@@ -94,7 +94,7 @@ const updateUser = async (req, res) => {
         if (fetchResult === role) return res.status(401).json({success: false, message: `User already has ${role} role.`});
 
         const user = new User();
-        const queryResult = id ? await user.updateUserWithId(id, {role: role}) : await user.updateUserWithEmail(email, {role: role});
+        const queryResult = id ? await user.updateUserWithId(Number(id), {role: role}) : await user.updateUserWithEmail(email, {role: role});
 
         if (!queryResult) return res.status(401).json({success: false, message: "User's role could not be updated."});
         res.status(201).json({success: true, message: "User's role successfully updated."});
@@ -113,7 +113,7 @@ const deleteUser = async (req, res) => {
         await authenticateConnection(sequelize);
     
         const user = new User();
-        id ? await user.deleteUserWithId(id) : await user.deleteUserWithEmail(email);
+        id ? await user.deleteUserWithId(Number(id)) : await user.deleteUserWithEmail(email);
     
         res.status(201).json({success: true, message: "User successfully deleted."});
     } catch (err) {
